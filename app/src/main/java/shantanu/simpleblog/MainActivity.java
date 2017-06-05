@@ -17,14 +17,15 @@ import android.widget.TextView;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 public class MainActivity extends AppCompatActivity {
 
     private FloatingActionButton bAddPost;
     private RecyclerView blogList;
-    private DatabaseReference databaseReference = null;
+    private DatabaseReference mDatabase = null;
     private ProgressDialog progressDialog = null;
     private boolean flag = true;
 
@@ -35,7 +36,8 @@ public class MainActivity extends AppCompatActivity {
 
         init();
 
-        databaseReference = FirebaseDatabase.getInstance().getReference().child("Blogs");
+        mDatabase = FirebaseDatabase.getInstance().getReference().child("Blogs");
+        mDatabase.keepSynced(true);
 
         blogList.setHasFixedSize(true);
         blogList.setLayoutManager(new LinearLayoutManager(this));
@@ -58,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
                 Blog.class,
                 R.layout.blog_row,
                 BlogViewHolder.class,
-                databaseReference
+                mDatabase
         ) {
             @Override
             protected void populateViewHolder(BlogViewHolder viewHolder, Blog model, int position) {
@@ -78,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
     public static class BlogViewHolder extends RecyclerView.ViewHolder {
 
         View view;
+
         public BlogViewHolder(View itemView) {
             super(itemView);
             view = itemView;
@@ -93,9 +96,21 @@ public class MainActivity extends AppCompatActivity {
             tvDesc.setText(desc);
         }
 
-        public void setImage(Context context, String imageUrl) {
-            ImageView image = (ImageView) view.findViewById(R.id.image);
-            Picasso.with(context).load(imageUrl).into(image);
+        public void setImage(final Context context, final String imageUrl) {
+            final ImageView image = (ImageView) view.findViewById(R.id.image);
+
+            Picasso.with(context).load(imageUrl).networkPolicy(NetworkPolicy.OFFLINE).into(image,
+                    new Callback() {
+                        @Override
+                        public void onSuccess() {
+
+                        }
+
+                        @Override
+                        public void onError() {
+                            Picasso.with(context).load(imageUrl).into(image);
+                        }
+                    });
         }
     }
 
