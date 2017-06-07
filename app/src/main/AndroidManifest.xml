@@ -21,8 +21,13 @@
         </activity>
         <activity android:name=".NewPost">
         </activity>
-        <activity android:name=".RegisterActivity"
+        <activity
+            android:name=".RegisterActivity"
             android:label="Register">
+        </activity>
+        <activity android:name=".LoginActivity">
+        </activity>
+        <activity android:name=".SetupActivity">
         </activity>
     </application>
 

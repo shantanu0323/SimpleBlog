@@ -36,7 +36,7 @@ public class RegisterActivity extends AppCompatActivity {
         etName = (EditText) findViewById(R.id.etName);
         etEmail = (EditText) findViewById(R.id.etEmail);
         etPassword = (EditText) findViewById(R.id.etPassword);
-        bRegister = (Button) findViewById(R.id.bRegister);
+        bRegister = (Button) findViewById(R.id.bLogin);
 
         mAuth = FirebaseAuth.getInstance();
         mDatabase = FirebaseDatabase.getInstance().getReference().child("Users");

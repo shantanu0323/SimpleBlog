@@ -3,10 +3,10 @@ package shantanu.simpleblog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
@@ -17,8 +17,11 @@ import android.widget.TextView;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
@@ -27,7 +30,11 @@ public class MainActivity extends AppCompatActivity {
 
     private FloatingActionButton bAddPost;
     private RecyclerView blogList;
+
     private DatabaseReference mDatabase = null;
+
+    private DatabaseReference mDatabaseUsers;
+
     private ProgressDialog progressDialog = null;
     private boolean flag = true;
 
@@ -46,15 +53,18 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 if (firebaseAuth.getCurrentUser() == null) {
-                    Intent intent = new Intent(getApplicationContext(), RegisterActivity.class);
+                    Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(intent);
+                    finish();
                 }
             }
         };
 
         mDatabase = FirebaseDatabase.getInstance().getReference().child("Blogs");
         mDatabase.keepSynced(true);
+        mDatabaseUsers = FirebaseDatabase.getInstance().getReference().child("Users");
+        mDatabaseUsers.keepSynced(true);
 
         blogList.setHasFixedSize(true);
         blogList.setLayoutManager(new LinearLayoutManager(this));
@@ -72,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        checkUserExist();
         mAuth.addAuthStateListener(mAuthListener);
         progressDialog.show();
         FirebaseRecyclerAdapter<Blog, BlogViewHolder> adapter = new FirebaseRecyclerAdapter<Blog, BlogViewHolder>(
@@ -93,6 +104,25 @@ public class MainActivity extends AppCompatActivity {
         };
 
         blogList.setAdapter(adapter);
+    }
+
+    private void checkUserExist() {
+        final String userId = mAuth.getCurrentUser().getUid();
+        mDatabaseUsers.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (!dataSnapshot.hasChild(userId)){
+                    Intent intent = new Intent(getApplicationContext(), SetupActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     public static class BlogViewHolder extends RecyclerView.ViewHolder {
