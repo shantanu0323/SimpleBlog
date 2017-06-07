@@ -61,6 +61,8 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
+        //mAuth.signOut();
+
         mDatabase = FirebaseDatabase.getInstance().getReference().child("Blogs");
         mDatabase.keepSynced(true);
         mDatabaseUsers = FirebaseDatabase.getInstance().getReference().child("Users");
@@ -107,22 +109,24 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkUserExist() {
-        final String userId = mAuth.getCurrentUser().getUid();
-        mDatabaseUsers.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (!dataSnapshot.hasChild(userId)){
-                    Intent intent = new Intent(getApplicationContext(), SetupActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivity(intent);
+        if (mAuth.getCurrentUser() != null) {
+            final String userId = mAuth.getCurrentUser().getUid();
+            mDatabaseUsers.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (!dataSnapshot.hasChild(userId)) {
+                        Intent intent = new Intent(getApplicationContext(), SetupActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        startActivity(intent);
+                    }
                 }
-            }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
 
-            }
-        });
+                }
+            });
+        }
     }
 
     public static class BlogViewHolder extends RecyclerView.ViewHolder {
