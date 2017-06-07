@@ -116,4 +116,10 @@ public class NewPost extends AppCompatActivity {
         uri = null;
         progressDialog = new ProgressDialog(this);
     }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        finish();
+    }
 }
