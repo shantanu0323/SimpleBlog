@@ -9,6 +9,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,6 +31,8 @@ public class MainActivity extends AppCompatActivity {
 
     private FloatingActionButton bAddPost;
     private RecyclerView blogList;
+
+    private static final String TAG = "MainActivity";
 
     private DatabaseReference mDatabase = null;
 
@@ -53,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 if (firebaseAuth.getCurrentUser() == null) {
+                    Log.e(TAG, "onAuthStateChanged: NO USER LOGGED IN");
                     Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(intent);
@@ -61,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-        //mAuth.signOut();
+//        mAuth.signOut();
 
         mDatabase = FirebaseDatabase.getInstance().getReference().child("Blogs");
         mDatabase.keepSynced(true);
@@ -115,6 +119,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if (!dataSnapshot.hasChild(userId)) {
+                        Log.e(TAG, "onDataChange: NO SUCH CHILD : REDIRECTING TO SetupActivity");
                         Intent intent = new Intent(getApplicationContext(), SetupActivity.class);
                         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         startActivity(intent);
