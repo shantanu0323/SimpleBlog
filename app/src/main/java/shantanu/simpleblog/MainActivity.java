@@ -101,6 +101,8 @@ public class MainActivity extends AppCompatActivity {
             protected void populateViewHolder(BlogViewHolder viewHolder, Blog model, int position) {
                 viewHolder.setTitle(model.getTitle());
                 viewHolder.setDesc(model.getDesc());
+                viewHolder.setUsername(model.getUsername());
+                viewHolder.setTime(model.getTime());
                 viewHolder.setImage(getApplicationContext(), model.getImage());
                 if (flag) {
                     progressDialog.dismiss();
@@ -151,6 +153,16 @@ public class MainActivity extends AppCompatActivity {
         public void setDesc(String desc) {
             TextView tvDesc = (TextView) view.findViewById(R.id.tvDesc);
             tvDesc.setText(desc);
+        }
+
+        public void setUsername(String username) {
+            TextView tvUsername = (TextView) view.findViewById(R.id.tvUsername);
+            tvUsername.setText(username);
+        }
+
+        public void setTime(String time) {
+            TextView tvTime = (TextView) view.findViewById(R.id.tvTime);
+            tvTime.setText(time);
         }
 
         public void setImage(final Context context, final String imageUrl) {
