@@ -13,9 +13,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.auth.FirebaseAuth;
@@ -36,14 +36,16 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
     private DatabaseReference mDatabase = null;
-
     private DatabaseReference mDatabaseUsers;
+    private DatabaseReference mDatabaseLikes;
 
     private ProgressDialog progressDialog = null;
     private boolean flag = true;
 
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
+
+    private boolean likeButtonClicked = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +73,8 @@ public class MainActivity extends AppCompatActivity {
         mDatabase.keepSynced(true);
         mDatabaseUsers = FirebaseDatabase.getInstance().getReference().child("Users");
         mDatabaseUsers.keepSynced(true);
+        mDatabaseLikes = FirebaseDatabase.getInstance().getReference().child("Likes");
+        mDatabaseLikes.keepSynced(true);
 
         blogList.setHasFixedSize(true);
         blogList.setLayoutManager(new LinearLayoutManager(this));
@@ -98,12 +102,15 @@ public class MainActivity extends AppCompatActivity {
                 mDatabase
         ) {
             @Override
-            protected void populateViewHolder(final BlogViewHolder viewHolder, final Blog model, int position) {
+            protected void populateViewHolder(final BlogViewHolder viewHolder, final Blog model, final int position) {
+
+                final String blogKey = getRef(position).getKey().toString();
 
                 viewHolder.setTitle(model.getTitle());
                 viewHolder.setDesc(model.getDesc());
                 viewHolder.setUsername(model.getUsername());
                 viewHolder.setTime(model.getTime());
+                viewHolder.setLikeButton(blogKey);
                 viewHolder.setImage(getApplicationContext(), model.getImage());
 
                 mDatabaseUsers.child(model.getUid()).child("image")
@@ -131,7 +138,39 @@ public class MainActivity extends AppCompatActivity {
                 viewHolder.view.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Toast.makeText(MainActivity.this, "Clicked!!!", Toast.LENGTH_SHORT).show();
+
+
+                    }
+                });
+
+                viewHolder.bLike.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        likeButtonClicked = true;
+                        Log.e(TAG, "onClick: Like button clicked");
+                        mDatabaseLikes.addValueEventListener(new ValueEventListener
+                                () {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                if (likeButtonClicked) {
+                                    if (dataSnapshot.child(blogKey).hasChild(mAuth.getCurrentUser
+                                            ().getUid())) {
+                                        mDatabaseLikes.child(blogKey).child(mAuth.getCurrentUser
+                                                ().getUid()).removeValue();
+                                        likeButtonClicked = false;
+                                    } else {
+                                        mDatabaseLikes.child(blogKey).child(mAuth.getCurrentUser()
+                                                .getUid()).setValue("RandomValue");
+                                        likeButtonClicked = false;
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
                     }
                 });
 
@@ -141,18 +180,35 @@ public class MainActivity extends AppCompatActivity {
         blogList.setAdapter(adapter);
     }
 
-    private void checkUserExist() {
-        if (mAuth.getCurrentUser() != null) {
-            final String userId = mAuth.getCurrentUser().getUid();
-            mDatabaseUsers.addValueEventListener(new ValueEventListener() {
+    public static class BlogViewHolder extends RecyclerView.ViewHolder {
+
+        View view;
+        ImageButton bLike;
+        FirebaseAuth mAuth;
+        DatabaseReference mDatabaseLikes;
+
+        public BlogViewHolder(View itemView) {
+            super(itemView);
+            view = itemView;
+            bLike = (ImageButton) view.findViewById(R.id.bLike);
+            mAuth = FirebaseAuth.getInstance();
+            mDatabaseLikes = FirebaseDatabase.getInstance().getReference().child("Likes");
+            mDatabaseLikes.keepSynced(true);
+
+        }
+
+        public void setLikeButton(final String blogKey) {
+            mDatabaseLikes.addValueEventListener(new ValueEventListener
+                    () {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    if (!dataSnapshot.hasChild(userId)) {
-                        Log.e(TAG, "onDataChange: NO SUCH CHILD : REDIRECTING TO SetupActivity");
-                        Intent intent = new Intent(getApplicationContext(), SetupActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        startActivity(intent);
+                    if (dataSnapshot.child(blogKey).hasChild(mAuth.getCurrentUser
+                            ().getUid())) {
+                        bLike.setImageResource(R.drawable.ic_like_blue);
+                    } else {
+                        bLike.setImageResource(R.drawable.ic_like_grey);
                     }
+
                 }
 
                 @Override
@@ -161,27 +217,9 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         }
-    }
-
-    public static class BlogViewHolder extends RecyclerView.ViewHolder {
-
-        View view;
-        TextView tvTitle;
-
-        public BlogViewHolder(View itemView) {
-            super(itemView);
-            view = itemView;
-            tvTitle = (TextView) view.findViewById(R.id.tvTitle);
-            tvTitle.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Log.e(TAG, "onClick: " + tvTitle.getText().toString());
-                }
-            });
-
-        }
 
         public void setTitle(String title) {
+            TextView tvTitle = (TextView) view.findViewById(R.id.tvTitle);
             tvTitle.setText(title);
         }
 
@@ -235,6 +273,27 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void checkUserExist() {
+        if (mAuth.getCurrentUser() != null) {
+            final String userId = mAuth.getCurrentUser().getUid();
+            mDatabaseUsers.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (!dataSnapshot.hasChild(userId)) {
+                        Log.e(TAG, "onDataChange: NO SUCH CHILD : REDIRECTING TO SetupActivity");
+                        Intent intent = new Intent(getApplicationContext(), SetupActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        startActivity(intent);
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
