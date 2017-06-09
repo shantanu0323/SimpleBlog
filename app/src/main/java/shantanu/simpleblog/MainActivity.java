@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.auth.FirebaseAuth;
@@ -125,6 +126,15 @@ public class MainActivity extends AppCompatActivity {
                     progressDialog.dismiss();
                     flag = false;
                 }
+
+                // Adding OnClickListener() to the entire Card
+                viewHolder.view.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Toast.makeText(MainActivity.this, "Clicked!!!", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
             }
         };
 
@@ -156,14 +166,22 @@ public class MainActivity extends AppCompatActivity {
     public static class BlogViewHolder extends RecyclerView.ViewHolder {
 
         View view;
+        TextView tvTitle;
 
         public BlogViewHolder(View itemView) {
             super(itemView);
             view = itemView;
+            tvTitle = (TextView) view.findViewById(R.id.tvTitle);
+            tvTitle.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.e(TAG, "onClick: " + tvTitle.getText().toString());
+                }
+            });
+
         }
 
         public void setTitle(String title) {
-            TextView tvTitle = (TextView) view.findViewById(R.id.tvTitle);
             tvTitle.setText(title);
         }
 

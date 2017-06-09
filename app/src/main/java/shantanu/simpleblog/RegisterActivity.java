@@ -99,7 +99,7 @@ public class RegisterActivity extends AppCompatActivity {
                                 DatabaseReference currentUser = mDatabase.child(userId);
 
                                 currentUser.child("name").setValue(name);
-                                currentUser.child("image").setValue("https://firebasestorage.googleapis.com/v0/b/simpleblog-a4d27.appspot.com/o/ProfilePics%2Fimage%3A45846?alt=media&token=2f78a6d7-bbd9-44d1-905a-cf12e053be67");
+                                currentUser.child("image").setValue("https://firebasestorage.googleapis.com/v0/b/simpleblog-a4d27.appspot.com/o/ProfilePics%2Fdefault_image.png?alt=media&token=a5f81ff5-75d2-4648-8772-6fe2dccc1f16");
 
                                 progressDialog.dismiss();
 
