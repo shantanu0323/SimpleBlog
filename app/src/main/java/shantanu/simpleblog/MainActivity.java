@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
                         .addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
-                                if (mAuth.getCurrentUser() != null) {
+                                if (dataSnapshot.getValue() != null) {
                                     viewHolder.setProfilePic(getApplicationContext(), dataSnapshot
                                             .getValue().toString());
                                 }
