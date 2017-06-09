@@ -10,17 +10,27 @@ public class Blog {
     private String image;
     private String username;
     private String time;
+    private String uid;
 
     public Blog() {
 
     }
 
-    public Blog(String title, String desc, String image, String username, String time) {
+    public Blog(String title, String desc, String image, String username, String time, String uid) {
         this.title = title;
         this.desc = desc;
         this.image = image;
         this.username = username;
         this.time = time;
+        this.uid = uid;
+    }
+
+    public String getUid() {
+        return uid;
+    }
+
+    public void setUid(String uid) {
+        this.uid = uid;
     }
 
     public String getTime() {

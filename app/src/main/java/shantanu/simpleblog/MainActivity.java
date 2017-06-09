@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
         init();
 
         mAuth = FirebaseAuth.getInstance();
+
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
@@ -64,8 +65,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         };
-
-//        mAuth.signOut();
 
         mDatabase = FirebaseDatabase.getInstance().getReference().child("Blogs");
         mDatabase.keepSynced(true);
@@ -98,12 +97,30 @@ public class MainActivity extends AppCompatActivity {
                 mDatabase
         ) {
             @Override
-            protected void populateViewHolder(BlogViewHolder viewHolder, Blog model, int position) {
+            protected void populateViewHolder(final BlogViewHolder viewHolder, final Blog model, int position) {
+
                 viewHolder.setTitle(model.getTitle());
                 viewHolder.setDesc(model.getDesc());
                 viewHolder.setUsername(model.getUsername());
                 viewHolder.setTime(model.getTime());
                 viewHolder.setImage(getApplicationContext(), model.getImage());
+
+                mDatabaseUsers.child(model.getUid()).child("image")
+                        .addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                if (mAuth.getCurrentUser() != null) {
+                                    viewHolder.setProfilePic(getApplicationContext(), dataSnapshot
+                                            .getValue().toString());
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+
                 if (flag) {
                     progressDialog.dismiss();
                     flag = false;
@@ -181,7 +198,25 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
         }
+
+        public void setProfilePic(final Context context, final String profilePicUrl) {
+            final ImageView profilePic = (ImageView) view.findViewById(R.id.profilePic);
+
+            Picasso.with(context).load(profilePicUrl).networkPolicy(NetworkPolicy.OFFLINE).into(profilePic,
+                    new Callback() {
+                        @Override
+                        public void onSuccess() {
+
+                        }
+
+                        @Override
+                        public void onError() {
+                            Picasso.with(context).load(profilePicUrl).into(profilePic);
+                        }
+                    });
+        }
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
