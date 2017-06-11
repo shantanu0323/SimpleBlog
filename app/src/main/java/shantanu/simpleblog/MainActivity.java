@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean likeButtonClicked = false;
 
     private String currentUsername;
-    private String clickedUser = "Profile";
+    private String clickedUserId = "Profile";
     private boolean profileClicked = false;
 
     @Override
@@ -89,20 +89,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getCurrentUsername() {
-        mDatabaseUsers.child(mAuth.getCurrentUser().getUid())
-                .addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        if (dataSnapshot.hasChild("name")) {
-                            currentUsername = dataSnapshot.child("name").getValue().toString();
+        if (mAuth.getCurrentUser() != null) {
+            mDatabaseUsers.child(mAuth.getCurrentUser().getUid())
+                    .addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            if (dataSnapshot.hasChild("name")) {
+                                currentUsername = dataSnapshot.child("name").getValue().toString();
+                            }
                         }
-                    }
 
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
 
-                    }
-                });
+                        }
+                    });
+        }
     }
 
     @Override
@@ -186,31 +188,19 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
 
-                // OnClickListener() for the  profile picture
+                // OnClickListener() for the profile picture
                 viewHolder.bProfilePic.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        profileClicked = true;
-                        Log.e(TAG, "onClick: BLOG KEY : " + blogKey);
-                        mDatabaseBlogs.child(blogKey).addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                if (profileClicked) {
-                                    if (dataSnapshot.hasChild("username")) {
-                                        clickedUser = dataSnapshot.child("username").getValue().toString();
-                                        profileClicked = false;
-                                        Intent intent = new Intent(getApplicationContext(), ProfileActivity.class);
-                                        intent.putExtra("username", clickedUser);
-                                        startActivity(intent);
-                                    }
-                                }
-                            }
+                        openProfile(blogKey);
+                    }
+                });
 
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {
-
-                            }
-                        });
+                // OnClickListener() for the Username
+                viewHolder.tvUsername.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        openProfile(blogKey);
                     }
                 });
 
@@ -223,6 +213,31 @@ public class MainActivity extends AppCompatActivity {
             progressDialog.dismiss();
             flag = false;
         }
+    }
+
+    private void openProfile(String blogKey) {
+        profileClicked = true;
+        Log.e(TAG, "onClick: BLOG KEY : " + blogKey);
+        mDatabaseBlogs.child(blogKey).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (profileClicked) {
+                    if (dataSnapshot.hasChild("uid")) {
+                        clickedUserId = dataSnapshot.child("uid").getValue()
+                                .toString();
+                        profileClicked = false;
+                        Intent intent = new Intent(getApplicationContext(), ProfileActivity.class);
+                        intent.putExtra("uid", clickedUserId);
+                        startActivity(intent);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     private void checkUserExist() {
@@ -270,5 +285,12 @@ public class MainActivity extends AppCompatActivity {
         blogList = (RecyclerView) findViewById(R.id.blogList);
         progressDialog = new ProgressDialog(this);
         progressDialog.setMessage("Loading...");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.e(TAG, "onResume: CAALLED");
+        progressDialog.dismiss();
     }
 }

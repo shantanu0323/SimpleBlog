@@ -22,6 +22,8 @@ public class BlogViewHolder extends RecyclerView.ViewHolder {
     View view;
     ImageButton bLike;
     CircularImageView bProfilePic;
+    TextView tvUsername;
+
     FirebaseAuth mAuth;
     DatabaseReference mDatabaseLikes;
 
@@ -30,6 +32,7 @@ public class BlogViewHolder extends RecyclerView.ViewHolder {
         view = itemView;
         bLike = (ImageButton) view.findViewById(R.id.bLike);
         bProfilePic = (CircularImageView) view.findViewById(R.id.profilePic);
+        tvUsername = (TextView) view.findViewById(R.id.tvUsername);
 
         mAuth = FirebaseAuth.getInstance();
         mDatabaseLikes = FirebaseDatabase.getInstance().getReference().child("Likes");
@@ -42,11 +45,13 @@ public class BlogViewHolder extends RecyclerView.ViewHolder {
                 () {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.child(blogKey).hasChild(mAuth.getCurrentUser
-                        ().getUid())) {
-                    bLike.setImageResource(R.drawable.ic_like_blue);
-                } else {
-                    bLike.setImageResource(R.drawable.ic_like_grey);
+                if (mAuth.getCurrentUser() != null) {
+                    if (dataSnapshot.child(blogKey).hasChild(mAuth.getCurrentUser
+                            ().getUid())) {
+                        bLike.setImageResource(R.drawable.ic_like_blue);
+                    } else {
+                        bLike.setImageResource(R.drawable.ic_like_grey);
+                    }
                 }
 
             }
