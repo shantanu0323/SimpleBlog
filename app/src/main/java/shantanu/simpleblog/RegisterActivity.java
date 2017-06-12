@@ -77,7 +77,7 @@ public class RegisterActivity extends AppCompatActivity {
 
     private void startRegister() {
         final String name = etName.getText().toString().trim();
-        String email = etEmail.getText().toString().trim();
+        final String email = etEmail.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
 
         if (!TextUtils.isEmpty(name) &&
@@ -99,6 +99,7 @@ public class RegisterActivity extends AppCompatActivity {
                                 DatabaseReference currentUser = mDatabase.child(userId);
 
                                 currentUser.child("name").setValue(name);
+                                currentUser.child("email").setValue(email);
                                 currentUser.child("image").setValue("https://firebasestorage.googleapis.com/v0/b/simpleblog-a4d27.appspot.com/o/ProfilePics%2Fdefault_image.png?alt=media&token=a5f81ff5-75d2-4648-8772-6fe2dccc1f16");
 
                                 progressDialog.dismiss();

@@ -39,6 +39,9 @@ public class ProfileActivity extends AppCompatActivity {
                     if (dataSnapshot.hasChild("name")) {
                         tvUsername.setText(dataSnapshot.child("name").getValue().toString());
                     }
+                    if (dataSnapshot.hasChild("email")) {
+                        tvEmail.setText(dataSnapshot.child("email").getValue().toString());
+                    }
                 }
 
                 @Override
